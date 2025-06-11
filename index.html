@@ -309,13 +309,15 @@
         let currentScanIndex = null;
 
         // Initialisation
-        document.addEventListener('DOMContentLoaded', function() {
-            await chargerMachinesDepuisGitHub();
-            showView('home');
-            document.getElementById('add-machine-form').addEventListener('submit', addMachine);
-            document.getElementById('etatcvi').addEventListener('change', toggleCVIDate);
+document.addEventListener('DOMContentLoaded', async function () {
+    // ➕ Nouvelle étape : lire depuis GitHub
+    await chargerMachinesDepuisGitHub();
 
-        });
+    // Ensuite, comportement normal :
+    showView('home');
+    document.getElementById('add-machine-form').addEventListener('submit', addMachine);
+    document.getElementById('etatcvi')?.addEventListener('change', toggleCVIDate);
+});
 
         // Gestion des vues
         function showView(viewName) {
