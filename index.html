@@ -310,7 +310,7 @@
 
         // Initialisation
         document.addEventListener('DOMContentLoaded', function() {
-            // Événements
+            await chargerMachinesDepuisGitHub();
             showView('home');
             document.getElementById('add-machine-form').addEventListener('submit', addMachine);
             document.getElementById('etatcvi').addEventListener('change', toggleCVIDate);
@@ -1315,6 +1315,19 @@ async function printQRCode() {
                 alert.remove();
             }, 5000);
         }
+	async function chargerMachinesDepuisGitHub() {
+    try {
+        const res = await fetch("https://api.github.com/repos/TON_UTILISATEUR/TON_DEPOT/contents/data/machines.json");
+        const data = await res.json();
+        const json = atob(data.content); // décodage Base64
+        machines = JSON.parse(json);
+        localStorage.setItem('machines', JSON.stringify(machines));
+        showAlert("Données chargées depuis GitHub", "success");
+    } catch (e) {
+        showAlert("Erreur lors du chargement GitHub", "danger");
+        machines = JSON.parse(localStorage.getItem('machines')) || [];
+    }
+}
     </script>
 <script>
 async function envoyerVersGitHub(machines) {
