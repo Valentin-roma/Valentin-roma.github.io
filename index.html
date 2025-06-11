@@ -1317,7 +1317,7 @@ async function printQRCode() {
         }
 	async function chargerMachinesDepuisGitHub() {
     try {
-        const res = await fetch("https://api.github.com/repos/TON_UTILISATEUR/TON_DEPOT/contents/data/machines.json");
+        const res = await fetch("https://api.github.com/repos/Valentin-roma/inventaire-machines/contents/data/machines.json");
         const data = await res.json();
         const json = atob(data.content); // décodage Base64
         machines = JSON.parse(json);
