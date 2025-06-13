@@ -303,23 +303,18 @@
 
     </div>
     <script>
-        // Variables globales
         let machines = JSON.parse(localStorage.getItem('machines')) || [];
         let html5QrcodeScanner = null;
         let currentScanIndex = null;
 
-        // Initialisation
 document.addEventListener('DOMContentLoaded', async function () {
-    // ➕ Nouvelle étape : lire depuis GitHub
     await chargerMachinesDepuisGitHub();
-
-    // Ensuite, comportement normal :
     showView('home');
     document.getElementById('add-machine-form').addEventListener('submit', addMachine);
     document.getElementById('etatcvi')?.addEventListener('change', toggleCVIDate);
 });
 
-        // Gestion des vues
+
         function showView(viewName) {
             document.querySelectorAll('.view').forEach(view => {
                 view.classList.add('hidden');
@@ -333,7 +328,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 	    }
         }
 
-        // Ajout machine
         function addMachine(e) {
             e.preventDefault();
             
@@ -348,7 +342,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 return;
             }
 
-            // Vérifier si le modèle existe déjà
+
 	    const existingIndex = machines.findIndex(m => 
     		m.marque && m.model &&
     		m.marque.toLowerCase() === marque.toLowerCase() && 
@@ -375,7 +369,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 		const allPositions = machines[existingIndex].unites.map(u => u.position?.trim()).filter(pos => pos);
 			machines[existingIndex].emplacement = [...new Set(allPositions)].join(' + ');
     
-                // Mise à jour CVI si nécessaire
                 if (etatcvi === 'oui') {
                     machines[existingIndex].etatcvi = 'oui';
                     machines[existingIndex].dateFinCVI = dateFinCVI;
@@ -462,7 +455,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         	}
 
     	});
-        // Mise à jour inventaire
+
 	function updateInventory() {
     		const tbody = document.getElementById('machines-table-body');
     		tbody.innerHTML = '';
@@ -537,11 +530,10 @@ document.addEventListener('DOMContentLoaded', async function () {
     		machine.quantite = machine.unites.length;
 
     		saveMachines();
+		envoyerVersGitHub(machines); 
     		updateInventory();
     		updateCVIList();
     		showAlert("Une unité a été ajoutée", "success");
-
-    		// Ouvre automatiquement les détails de l’unité
     		document.getElementById(`units-${index}`).style.display = 'block';
 	}
 
@@ -637,6 +629,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     		}
 
     		saveMachines();
+	    	envoyerVersGitHub(machines); 
     		updateInventory();
     		updateCVIList();
     		showAlert("Unité supprimée avec succès", "success");
@@ -656,7 +649,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     		}
 
   		machines[index].unites = newUnits;
-		machines[index].quantite = newUnits.length; // Synchronisation de la quantité
+		machines[index].quantite = newUnits.length; 
 
     		if (machines[index].quantite === 0) {
         		machines.splice(index, 1);
@@ -669,6 +662,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 		machines[index].emplacement = uniquePositions.join(' + ');
 
     		saveMachines();
+		envoyerVersGitHub(machines); 
 		updateInventory();
     		updateCVIList();
     		showAlert('Unités mises à jour avec succès', 'success');
@@ -798,12 +792,13 @@ document.addEventListener('DOMContentLoaded', async function () {
 
        	 		machines = Object.values(grouped).map(machine => ({
             			...machine,
-            			etatcvi: 'non', // champ global ignoré ici
+            			etatcvi: 'non',
             			dateFinCVI: null,
             			createdAt: new Date().toISOString()
         		}));
 
         		saveMachines();
+			envoyerVersGitHub(machines); 
         		showAlert("Importation Excel réussie", "success");
         		updateInventory();
     		};
@@ -845,6 +840,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     		unit.dateFinCVI = (unit.etatcvi === 'oui') ? document.getElementById('edit-unit-date-cvi').value : null;
 
     		saveMachines();
+		envoyerVersGitHub(machines); 
     		showAlert('Unité mise à jour', 'success');
     		showView('list-machines');
 	});
@@ -925,9 +921,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 	}
 
 
-
-
-        // Mise à jour liste CVI
 	function updateCVIList() {
    		const tbody = document.getElementById('cvi-table-body');
 		tbody.innerHTML = '';
@@ -959,7 +952,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 
           	
 
-        // Modal produit
         function showProductModal(index) {
             const machine = machines[index];
             currentScanIndex = index;
@@ -1018,7 +1010,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             new bootstrap.Modal(document.getElementById('productModal')).show();
         }
 
-        // Mise à jour produit
         function updateProduct() {
             const index = currentScanIndex;
 	    const newmodel = document.getElementById('modal-model').value;
@@ -1040,7 +1031,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
         }
 
-        // Suppression machine
         function deleteMachine(index) {
             if (confirm('Êtes-vous sûr de vouloir supprimer cette machine ?')) {
                 machines.splice(index, 1);
@@ -1195,74 +1185,71 @@ document.addEventListener('DOMContentLoaded', async function () {
    		html += `</div>`;
     		resultsContainer.innerHTML = html;
 	}
-async function printQRCode() {
-    const marque = document.getElementById('marque').value.trim();
-    const model = document.getElementById('model').value.trim();
-    const quantite = parseInt(document.getElementById('quantite').value);
+	async function printQRCode() {
+    		const marque = document.getElementById('marque').value.trim();
+    		const model = document.getElementById('model').value.trim();
+    		const quantite = parseInt(document.getElementById('quantite').value);
 
-    if (!marque || !model || isNaN(quantite)) {
-        showAlert('Veuillez remplir tous les champs avant d\'imprimer', 'danger');
-        return;
-    }
+    		if (!marque || !model || isNaN(quantite)) {
+        		showAlert('Veuillez remplir tous les champs avant d\'imprimer', 'danger');
+       	 		return;
+    		}
 
-    // Crée une fenêtre d'impression
-    const printWindow = window.open('', '_blank');
+    		const printWindow = window.open('', '_blank');
     
-    // Générer le contenu HTML pour l'impression
-    let printContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Impression QR Codes</title>
-        <style>
-            @page {
-                size: auto;
-                margin: 0;
-            }
-            body {
-                margin: 0;
-                padding: 0;
-		font-family:Arial, sans-serif;
-                height: 100vh;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
+    
+    		let printContent = `
+    		<!DOCTYPE html>
+    		<html>
+    		<head>
+        		<title>Impression QR Codes</title>
+        			<style>
+            				@page {
+                				size: auto;
+                				margin: 0;
+            				}
+            				body {
+                				margin: 0;
+                				padding: 0;
+						font-family:Arial, sans-serif;
+                				height: 100vh;
+                				display: flex;
+                				flex-direction: column;
+                				align-items: center;
+                				justify-content: center;
 
-            }
-            .qr-container {
-                width: auto;
-                height: auto;
-                display: flex;
-		display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                page-break-after: always;
-            }
-            .qr-code {
-                width: auto !important;
-                height: auto !important;
-		margin : 0 auto
-		image-rendering: crisp-edges;
-            }
-            .infos {
-                text-align: center;
-                font-size: auto;
-                margin-top: 0mm;
-                font-weight: bold;
-                width: 100%;
-            }
-        </style>
-    </head>
+            				}
+            				.qr-container {
+                				width: auto;
+                				height: auto;
+                				display: flex;
+						display: flex;
+                				flex-direction: column;
+                				align-items: center;
+                				justify-content: center;
+                				page-break-after: always;
+            				}
+            				.qr-code {
+              	  				width: auto !important;
+                				height: auto !important;
+						margin : 0 auto
+						image-rendering: crisp-edges;
+            				}
+            				.infos {
+                				text-align: center;
+                				font-size: auto;
+                				margin-top: 0mm;
+                				font-weight: bold;
+                				width: 100%;
+            				}
+        			</style>
+    		</head></html>
     <body>`;
 
-    // Ajouter une étiquette pour chaque unité
     for (let i = 0; i < quantite; i++) {
         const numserie = document.getElementById(`numserie-${i}`)?.value.trim() || '';
         const position = document.getElementById(`position-${i}`)?.value.trim() || '';
         
-        // Générer le QR code
         const qr = qrcode(0, 'H');
         const qrData = `${marque}|${model}|${numserie}`;
         qr.addData(qrData);
@@ -1286,8 +1273,6 @@ async function printQRCode() {
 
     printWindow.document.write(printContent);
     printWindow.document.close();
-
-    // Délai pour permettre le chargement avant impression
     setTimeout(() => {
         printWindow.print();
     }, 0.1);
@@ -1321,10 +1306,10 @@ async function printQRCode() {
     try {
         const res = await fetch("https://api.github.com/repos/Valentin-roma/inventaire-machines/contents/data/machines.json");
         const data = await res.json();
-        const json = atob(data.content); // décodage Base64
+        const json = atob(data.content); 
         machines = JSON.parse(json);
         localStorage.setItem('machines', JSON.stringify(machines));
-        showAlert("Données chargées depuis GitHub", "success");
+        console.log("Données chargées depuis GitHub");
     } catch (e) {
         showAlert("Erreur lors du chargement GitHub", "danger");
         machines = JSON.parse(localStorage.getItem('machines')) || [];
@@ -1348,8 +1333,7 @@ async function envoyerVersGitHub(machines) {
     alert("Erreur : " + result.message);
   }
 }
-console.log("Contenu envoyé à GitHub :");
-console.log(JSON.stringify(machines, null, 2));
+
 </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
