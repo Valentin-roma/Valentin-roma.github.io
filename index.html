@@ -191,10 +191,11 @@
     </div>
 
     <div id="export-view" class="view hidden">
-		<h2>Gérer une sauvegarde</h2>
 		  <div class="card shadow mx-auto mt-4" style="max-width: 600px;">
 	            <div class="card-body">
+			<h2>Gérer une sauvegarde</h2>
                 	<div class="d-grid gap-2">
+				<h6>Exporter </h6>
                     		<button class="btn btn-danger" onclick="exportData()">Exporter (JSON) </button>
 			
 				<button class="btn btn-danger" onclick="exportDataToExcel()">Exporter (EXCEL)</button>
@@ -211,14 +212,14 @@
   		  <div class="card shadow mx-auto mt-4" style="max-width: 600px;">
 	            <div class="card-body">
                 	<div class="d-grid gap-2">
-				<h5> Login </h5>
-                    		<input type="text" id="mdp" class="form-control mt-2" >
+				<h5> Sauvegarde  </h5>
+                    		<button class="btn btn-danger" onclick="envoyerVersGitHub(machines)">Sauvegarde</button>
 			               
 			</div>	
 		      </div>
 		  </div>
 	</div>		
-    <!-- Modal pour afficher le QR Code -->
+
     <div class="modal fade" id="qrCodeModal" tabindex="-1" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
   	<div class="modal-dialog modal-dialog-centered">
     		<div class="modal-content text-center">
@@ -231,7 +232,7 @@
   	</div>
     </div>
 
-    <!-- Modal Produit -->
+
     <div class="modal fade" id="productModal" tabindex="-1" style="display: none;" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -261,6 +262,7 @@
             </div>
         </div>
      </div>
+
 	<div id="unit-edit-view" class="view hidden">
 	   <div class="card shadow mx-auto mt-4" style="max-width: 600px;">
 	      <div class="card-body">
@@ -350,7 +352,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             );
 
             if (existingIndex !== -1) {
-                // Mise à jour de la quantité
                 machines[existingIndex].quantite += quantite;
 		const newUnits = [];
     		for (let i = 0; i < quantite; i++) {
@@ -1328,9 +1329,9 @@ async function envoyerVersGitHub(machines) {
  
   const result = await response.json();
   if (response.ok) {
-    alert("Mise à jour réussie !");
+    showAlert("Mise à jour réussie !","success");
   } else {
-    alert("Erreur : " + result.message);
+    showAlert("Erreur : " + result.message);
   }
 }
 
