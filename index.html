@@ -213,7 +213,8 @@
 	            <div class="card-body">
                 	<div class="d-grid gap-2">
 				<h5> Sauvegarde  </h5>
-                    		<button class="btn btn-danger" onclick="envoyerVersGitHub(machines)">Sauvegarder</button>
+                    		<button class="btn btn-danger" onclick="envoyerVersGitHub(machines)">Sauvegarde</button>
+				<button class="btn btn-danger" onclick="chargerMachinesDepuisGitHub()">Charger</button>
 			               
 			</div>	
 		      </div>
@@ -327,6 +328,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             if (viewName === 'cvi') updateCVIList();
 	    if (viewName === 'add-machine') {
     		document.getElementById('quantite').dispatchEvent(new Event('input'));
+	    chargerMachinesDepuisGitHub()
 	    }
         }
 
@@ -1329,7 +1331,7 @@ async function envoyerVersGitHub(machines) {
  
   const result = await response.json();
   if (response.ok) {
-    showAlert("Mise à jour réussie !","success");
+    console.log("mise à jour réussi sur github");
   } else {
     showAlert("Erreur : " + result.message);
   }
