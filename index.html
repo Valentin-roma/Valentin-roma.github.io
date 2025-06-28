@@ -33,6 +33,37 @@
         .alert {
             transition: opacity 0.5s ease-out;
         }
+	.table-danger {
+    		background-color: #ffdddd !important; /* Rouge très clair */
+	}
+
+	.text-danger.fw-bold {
+    		font-weight: bold;
+    		color: #dc3545 !important; /* Rouge Bootstrap */
+	}
+	#unit-edit-view {
+  		position: fixed;
+  		top: 0;
+  		left: 0;
+  		z-index: 1060;
+  		background-color: white;
+  		width: 100vw;
+  		height: 100vh;
+  		overflow: auto;
+	}
+	html, body {
+    		height: 100%;
+	}
+
+	body {
+    		display: flex;
+    		flex-direction: column;
+	}
+
+	.container {
+    		flex: 1;
+	}
+
     </style>
 </head>
 <body class="" style="">
@@ -59,11 +90,17 @@
                     <li class="nav-item">
                         <a class="nav-link" href="#" onclick="showView('export')">Sauvegarde</a>
 		    </li>
+		   <li class="nav-item">
+    			<a class="nav-link" href="#" onclick="showView('logs')">Logs</a>
+		   </li>
+
                 </ul>
             </div>
 
         </div>
     </nav>
+
+
 
     <div class="container mt-4">
         <div id="alert-placeholder"></div>
@@ -92,25 +129,27 @@
                     <label for="quantite" class="form-label">Quantité</label>
                     <input type="number" class="form-control" id="quantite" min="1" value="1" required="">
                 </div>
+		<div class="mb-3">
+			<label for="description" class="form-label">Description</label>
+			<textarea class="form-control" id="description" rows="3"></textarea>
+		</div>
 		<div id="unit-fields-container"></div>
 
                 <button type="submit" class="btn btn-primary">Enregistrer</button>
                 <button type="button" class="btn btn-secondary" onclick="showView('home')">Annuler</button>
-		<button type="button" class="btn btn-sm btn-outline-success" onclick="printQRCode()">Imprimer le QR</button>
+		<button type="button" class="btn btn-success" onclick="printQRCode()">Imprimer le QR</button>
             </form>
         </div>
-
-        
         <div id="list-machines-view" class="view hidden">
             <h2>Inventaire des Machines</h2>
             <div class="table-responsive">
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>Marque</th>
-                            <th>Modèle</th>
+                            <th onclick="sortMachinesby('marque',this)">Marque<span class="chevron"></span></th>
+			    <th onclick="sortMachinesby('model',this)">Modèle<span class="chevron"></span></th>
                             <th>Quantité</th>
-			    <th>Emplacement Global</th>
+			    <th onclick="sortMachinesby('emplacement',this)">Emplacement Global<span class="chevron"></span></th>
                             <th>Actions</th>
 
                         </tr>
@@ -131,7 +170,6 @@
             <button class="btn btn-secondary" onclick="showView('home')">Retour</button>
         </div>
 
-
         <div id="scan-view" class="view hidden">
             <h2>Scanner un produit</h2>
             <div class="card">
@@ -148,25 +186,33 @@
                 </div>
             </div>
             <div class="card mt-3">
-                <div class="card-body">
-                    <h5>Recherche manuelle</h5>
-                    <div class="input-group">
-                        <input type="text" class="form-control" id="manual-search" placeholder="Marque ou modèle">
-                        <button class="btn btn-primary" type="button" onclick="manualSearch()">Rechercher</button>
-                    </div>
-        	    <div id="search-results" class="mt-3"></div>
-
-                </div>
-            </div>
+  			<div class="card-body">
+    				<h5>Recherche manuelle</h5>
+    				<div class="row g-2 align-items-center">
+      					<div class="col-md-4">
+        					<select class="form-select" id="search-type">
+          						<option value="model">Marque / Modèle</option>
+          						<option value="numserie">Numéro de série</option>
+        					</select>
+      					</div>
+      					<div class="col-md-6">
+        					<input type="text" class="form-control" id="manual-search" placeholder="Rechercher une marque/modèle ou un numéro de série">
+      					</div>
+      					<div class="col-md-2 d-grid">
+        					<button class="btn btn-primary" type="button" onclick="manualSearch()">Rechercher</button>
+      					</div>
+    				</div>
+    				<div id="search-results" class="mt-4"></div>
+  			</div>
+		</div>
             <button class="btn btn-secondary mt-3" onclick="showView('home')">Retour</button>
+
         </div>
 	<div id="unit-detail-view" class="view hidden">
     		<h2>Détail de l’unité</h2>
     		<div id="unit-detail-content" class="border rounded p-3 bg-light"></div>
     		<button class="btn btn-secondary mt-3" onclick="showView('home')">Retour</button>
 	</div>
-
-	    
         <div id="cvi-view" class="view">
             <h2>Gestion des CVI</h2>
             <div class="table-responsive">
@@ -174,11 +220,10 @@
                     <thead>
                         <tr>
                             <th>Marque</th>
-                            <th>Modèle</th>
+			    <th>Modèle</th>
 			    <th>Numéro de série</th>
 			    <th>Emplacement</th>
-                            <th>Date fin CVI</th>
-                            <th>Actions</th>
+                            <th>Date du CVI</th>
                         </tr>
 
                     </thead>
@@ -188,22 +233,23 @@
             <button class="btn btn-secondary" onclick="showView('home')">Retour</button>
         </div>
     </div>
-
-	
+	<footer class="text-center mt-5 py-3 bg-light text-muted" style="font-size: 0.9rem;">
+    		Conçu par Valentin Roy-Mamer avec l'aide de Ryan ALONZO ©2025
+	</footer>
     <div id="export-view" class="view hidden">
 		  <div class="card shadow mx-auto mt-4" style="max-width: 600px;">
 	            <div class="card-body">
 			<h2>Gérer une sauvegarde</h2>
                 	<div class="d-grid gap-2">
-				<h6>Exporter </h6>
-                    		<button class="btn btn-danger" onclick="exportData()">Exporter (JSON) </button>
+				<h5>Exporter </h5>
+                    		<button class="btn btn-danger" onclick="exportData()">Exporter JSON</button>
 			
-				<button class="btn btn-danger" onclick="exportDataToExcel()">Exporter (EXCEL)</button>
+				<button class="btn btn-danger" onclick="exportDataToExcel()">Exporter EXCEL</button>
                 
-				<h5>Importer un fichier (JSON)</h5>
+				<h5>Importer un fichier JSON</h5>
 				<input type="file" id="import-file" class="form-control mt-2" onchange="importData()">
                 
-				<h5>Importer un fichier (EXCEL)</h5>
+				<h5>Importer un fichier EXCEL</h5>
 				<input type="file" id="import-excel-file" class="form-control" accept=".xlsx, .xls, .json" onchange="importDataFromExcel()">
 
 			</div>	
@@ -221,21 +267,27 @@
 		  </div>
 	</div>		
 
-    <div class="modal fade" id="qrCodeModal" tabindex="-1" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
-  	<div class="modal-dialog modal-dialog-centered">
-    		<div class="modal-content text-center">
-     			<div class="modal-header">
-        			<h5 class="modal-title" id="qrCodeModalLabel">QR Code</h5>
-        			<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      			</div>
-      			<div class="modal-body" id="qrCodeModalBody"></div>
+	<div id="logs-view" class="view hidden">
+    		<h2>Journal des actions</h2>
+    		<div class="table-responsive">
+        		<table class="table table-bordered">
+            			<thead>
+                			<tr>
+                    				<th>Date</th>
+                    				<th>Type</th>
+                    				<th>Message</th>	
+					</tr>
+            			</thead>
+            			<tbody id="logs-table-body"></tbody>
+        		</table>
     		</div>
-  	</div>
-    </div>
+    		<button class="btn btn-secondary" onclick="clearLogs()">Vider les logs</button>
+    		<button class="btn btn-secondary" onclick="showView('home')">Retour</button>
+	</div>
 
 
     <div class="modal fade" id="productModal" tabindex="-1" style="display: none;" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Fiche Produit</h5>
@@ -244,15 +296,19 @@
                 <div class="modal-body" id="product-modal-body">
                 <div class="mb-3">
                     <label class="form-label">Marque</label>
-                    <input type="text" class="form-control" id="modal-marque" value="Tektronix">
+                    <input type="text" class="form-control" id="modal-marque">
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Modèle</label>
-                    <input type="text" class="form-control" id="modal-model" value="3750">
+                    <input type="text" class="form-control" id="modal-model">
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Quantité</label>
                     <input type="number" class="form-control" id="modal-quantity" value="1" min="1">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <input type="text" class="form-control" id="modal-description">
                 </div>
 
                 <div class="d-flex justify-content-between">
@@ -296,10 +352,13 @@
             			<label class="form-label">Date fin CVI</label>
             			<input type="date" class="form-control" id="edit-unit-date-cvi">
         		</div>
-        		<button type="submit" class="btn btn-success">Enregistrer</button>
-			<button class="btn btn-sm btn-danger" onclick="deleteCurrentUnit()">Supprimer</button>
-        		
-    		</form>
+       			<button type="submit" class="btn btn-primary">Enregistrer</button>
+			<button type="button" class="btn btn-danger" id="delete-unit-button">Supprimer</button>
+			<button type="button" class="btn btn-success" onclick="imprimerQRCodeUnite()">Imprimer le QR</button>
+       			<button type="button" class="btn btn-secondary" onclick="showView('scan')">Annuler</button>
+
+
+		</form>
 	     </div>
 	  </div>
 	</div>
@@ -310,12 +369,12 @@
         let html5QrcodeScanner = null;
         let currentScanIndex = null;
 
-document.addEventListener('DOMContentLoaded', async function () {
-    await chargerMachinesDepuisGitHub();
-    showView('home');
-    document.getElementById('add-machine-form').addEventListener('submit', addMachine);
-    document.getElementById('etatcvi')?.addEventListener('change', toggleCVIDate);
-});
+	document.addEventListener('DOMContentLoaded', async function () {
+    		await chargerMachinesDepuisGitHub();
+    		showView('home');
+    		document.getElementById('add-machine-form').addEventListener('submit', addMachine);
+    		document.getElementById('etatcvi')?.addEventListener('change', toggleCVIDate);
+	});
 
 
         function showView(viewName) {
@@ -326,17 +385,16 @@ document.addEventListener('DOMContentLoaded', async function () {
             
             if (viewName === 'list-machines') updateInventory();
             if (viewName === 'cvi') updateCVIList();
-	    if (viewName === 'add-machine') {
-    		document.getElementById('quantite').dispatchEvent(new Event('input'));
-	    chargerMachinesDepuisGitHub()
-	    }
-        }
+	    if (viewName === 'add-machine') {document.getElementById('quantite').dispatchEvent(new Event('input'));};
+	    if (viewName === 'logs') updateLogsView();
+	}
 
         function addMachine(e) {
             e.preventDefault();
             
             const marque = document.getElementById('marque').value.trim();
             const model = document.getElementById('model').value.trim();
+	    const description = document.getElementById('description').value.trim();
             const quantite = parseInt(document.getElementById('quantite').value);
             const etatcvi = 'non';
             const dateFinCVI = null;
@@ -400,6 +458,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     model: model,
                     quantite,
 		    emplacement:emplacementGlobal,
+		    description:description,
 		    unites: Array.from({ length: quantite }, (_, i) => ({
     			numserie: document.getElementById(`numserie-${i}`).value.trim(),
 			position: document.getElementById(`position-${i}`).value.trim(),
@@ -408,12 +467,14 @@ document.addEventListener('DOMContentLoaded', async function () {
 			})),
                     createdAt: new Date().toISOString()
                 });
+		logAction("ajout", `${machine.marque} ${machine.model} ajouté au stock`, {
+    			marque: machine.marque,
+    			model: machine.model,
+		});
                 showAlert('Nouveau modèle ajouté', 'success');
             }
-
+		
             saveMachines();
-	    envoyerVersGitHub(machines); 
-            document.getElementById('add-machine-form').reset();
             showView('list-machines');
         }
 	
@@ -481,22 +542,16 @@ document.addEventListener('DOMContentLoaded', async function () {
             					: null
     				});
 			}	
+		
 
-
-			const uniquePositions = [...new Set(newUnits
-    				.map(u => u.position?.trim())
-    				.filter(pos => pos))];
-			const emplacementGlobal = uniquePositions.join(' + ');
         		tr.innerHTML = `
             			<td>${machine.marque}</td>
             			<td>${machine.model}</td>
             			<td>${machine.quantite}</td>
             			<td>${machine.emplacement}</td>
-    					<button class="btn btn-sm btn-primary me-1" onclick="showProductModal(${index})">Voir plus</button>
-    					<button class="btn btn-sm btn-outline-secondary" onclick="toggleUnitDetails('units-${index}')">Unités</button>
-            			</td>
-            			<td>
-                			    <button class="btn btn-sm btn-info" onclick="showQRCodeModal(${index})">Voir QR Code</button>
+	       			<td>
+    					<button class="btn btn-primary" onclick="showProductModal(${index})">Voir plus</button>
+    					<button class="btn btn-secondary" onclick="toggleUnitDetails('units-${index}')">Unités</button>
             			</td>
         		`;
         		tbody.appendChild(tr);
@@ -533,9 +588,13 @@ document.addEventListener('DOMContentLoaded', async function () {
     		machine.quantite = machine.unites.length;
 
     		saveMachines();
-		envoyerVersGitHub(machines); 
+		
     		updateInventory();
     		updateCVIList();
+		logAction("ajout", `Nouvelle unité ajoutée à ${machine.marque} ${machine.model} ${unit.numserie}`, {
+    			index,
+    			nouvelleUnite: machine.unites[machine.unites.length - 1]
+		});
     		showAlert("Une unité a été ajoutée", "success");
     		document.getElementById(`units-${index}`).style.display = 'block';
 	}
@@ -545,10 +604,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 		container.style.display = container.style.display === 'none' ? 'block' : 'none';
 	}
 
-	function showQRCodeModal(qrHtml) {
-    		document.getElementById('qrCodeModalBody').innerHTML = qrHtml;
-    		new bootstrap.Modal(document.getElementById('qrCodeModal')).show();
-	}
 
 	function generateUnitFields(machine, index) {
     		const unites = machine.unites || [];
@@ -593,46 +648,29 @@ document.addEventListener('DOMContentLoaded', async function () {
     		return html;
 	}
 
-	function deleteCurrentUnit() {
-    		if (currentMachineIndex === null || currentUnitIndex === null) return;
-    
-    		if (confirm("Êtes-vous sûr de vouloir supprimer cette unité ?")) {
-        		const machine = machines[currentMachineIndex];
-        
 
-        		machine.unites.splice(currentUnitIndex, 1);
-        		machine.quantite = machine.unites.length;
-
-        		if (machine.quantite === 0) {
-            			machines.splice(currentMachineIndex, 1);
-            			showAlert("Machine supprimée car elle n'a plus d'unités", "warning");
-        		} else {
-            			showAlert("Unité supprimée avec succès", "success");
-        		}
-
-        		saveMachines();
-        		updateInventory();
-        		updateCVIList();
-        		showView('list-machines'); // Retour à la liste dans tous les cas
-    		}
-	}
 	function deleteUnit(machineIndex, unitIndex) {
     		const machine = machines[machineIndex];
     		if (!machine.unites || !machine.unites[unitIndex]) return;
-
+		const unit = machine.unites[unitIndex];
     		if (!confirm(`Supprimer l’unité n°${unitIndex + 1} (n° série: ${machine.unites[unitIndex].numserie}) ?`)) return;
-
+		logAction("suppression", `Suppression d’une unité de ${machine.marque} ${machine.model} ${unit.numserie}`, {
+    			numserie: unit.numserie
+		});
     		machine.unites.splice(unitIndex, 1);
     		machine.quantite = machine.unites.length;
 
 		if (machine.quantite === 0) {
         		machines.splice(machineIndex, 1);
         		showAlert("Machine supprimée car elle n'a plus d'unités", "warning");
-        		showView('list-machines');
+			showView('list-machines');
     		}
-
+		logAction("suppression", `Suppression d'une unité de ${machine.marque} ${machine.model}, s/n : ${unit.numserie}`, {
+        		numserie: unit.numserie
+    		});
+		const uniquePositions = [...new Set(machine.unites.map(u => u.position?.trim()).filter(pos => pos))];
+    		machine.emplacement = uniquePositions.join(' + ');
     		saveMachines();
-	    	envoyerVersGitHub(machines); 
     		updateInventory();
     		updateCVIList();
     		showAlert("Unité supprimée avec succès", "success");
@@ -663,11 +701,15 @@ document.addEventListener('DOMContentLoaded', async function () {
     			.map(u => u.position?.trim())
     			.filter(pos => pos))];
 		machines[index].emplacement = uniquePositions.join(' + ');
+		const numseries = importedData.flatMap(m => m.unites?.map(u => u.numserie)).filter(Boolean);
+		logAction("import", "Importation JSON", { count: importedData.length, numseries });
 
     		saveMachines();
-		envoyerVersGitHub(machines); 
 		updateInventory();
     		updateCVIList();
+		logAction("modification", `Unités n°${unit.numserie} modifiées de ${machine.marque} ${machine.model}`, {
+    			numseries
+		});
     		showAlert('Unités mises à jour avec succès', 'success');
 	}
 
@@ -696,6 +738,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     					return;
 				}
                			machines = importedData;
+				logAction("importation", `Importation d'un fichier JSON`, {
+				});
                 		saveMachines();
                 		showAlert("Données importées avec succès", "success");
                 		updateInventory();
@@ -718,6 +762,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             			marque: machine.marque,
             			model: machine.model,
             			quantite: machine.quantite,
+				description: machine.description,
         		};
 
         		if (Array.isArray(machine.unites) && machine.unites.length > 0) {
@@ -779,6 +824,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     				model: row.model,
 
                    				quantite: 0,
+						description: row.description,
                 	    			unites: []
                 			};
            			}
@@ -799,9 +845,10 @@ document.addEventListener('DOMContentLoaded', async function () {
             			dateFinCVI: null,
             			createdAt: new Date().toISOString()
         		}));
+			const numseries = importedRows.map(r => r.numserie).filter(Boolean);
+			logAction("import", "Importation Excel", { lignes: importedRows.length, numseries });
 
         		saveMachines();
-			envoyerVersGitHub(machines); 
         		showAlert("Importation Excel réussie", "success");
         		updateInventory();
     		};
@@ -815,6 +862,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 	function showUnitEditView(machineIndex, unitIndex) {
     		currentMachineIndex = machineIndex;
     		currentUnitIndex = unitIndex;
+		document.getElementById('unit-edit-view').classList.remove('hidden');
+		bootstrap.Modal.getInstance(document.getElementById('productModal'))?.hide();
 
     		const machine = machines[machineIndex];
     		const unit = machine.unites[unitIndex];
@@ -825,10 +874,12 @@ document.addEventListener('DOMContentLoaded', async function () {
     		document.getElementById('edit-unit-position').value = unit.position;
     		document.getElementById('edit-unit-cvi').value = unit.etatcvi;
     		document.getElementById('edit-unit-date-cvi').value = unit.dateFinCVI || '';
+    		document.getElementById('delete-unit-button').onclick = function() {
+        		deleteUnit(currentMachineIndex, currentUnitIndex);
+    		};
 
-    		showView('unit-edit');
+		showView('unit-edit');
 	}
-
 	document.getElementById('unit-edit-form').addEventListener('submit', function(e) {
     		e.preventDefault();
 
@@ -841,11 +892,16 @@ document.addEventListener('DOMContentLoaded', async function () {
     		unit.position = document.getElementById('edit-unit-position').value;
     		unit.etatcvi = document.getElementById('edit-unit-cvi').value;
     		unit.dateFinCVI = (unit.etatcvi === 'oui') ? document.getElementById('edit-unit-date-cvi').value : null;
-
+        	const uniquePositions = [...new Set(machine.unites.map(u => u.position?.trim()).filter(pos => pos))];
+	        machine.emplacement = uniquePositions.join(' + ');
     		saveMachines();
-		envoyerVersGitHub(machines); 
+		logAction("modification", `Modification de l’unité ${machine.marque} ${machine.model}${unit.numserie}`, {
+    			marque: machine.marque,
+    			model: machine.model,
+    			numserie: unit.numserie
+		});
     		showAlert('Unité mise à jour', 'success');
-    		showView('list-machines');
+    		showView('scan');
 	});
 
 	function downloadQRCode(data, filename = "qr-code.png", marque = "", model = "",numserie="") {
@@ -883,9 +939,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         		const centerX = width / 2;
         		const startY = qrImg.height + padding;
 
-        		ctx.fillText(`Marque : ${marque}`, centerX, startY);
-        		ctx.fillText(`Modèle : ${model}`, centerX, startY + lineHeight);
-			ctx.fillText(`S/N : ${numserie}`, centerX, startY + lineHeight*2);
+        		ctx.fillText(`${marque}`, centerX, startY);
+        		ctx.fillText(`${model}`, centerX, startY + lineHeight);
+			ctx.fillText(`${numserie}`, centerX, startY + lineHeight*2);
 
 
         		const link = document.createElement("a");
@@ -894,53 +950,37 @@ document.addEventListener('DOMContentLoaded', async function () {
         		link.click();
     		};
 	}
-	function showQRCodeModalFromSerial(serial) {
-    		if (!serial || serial.trim() === '') {
-        		alert("Numéro de série vide !");
-        		return;
-    		}
 
-    		const qr = qrcode(0, 'L');
-    		qr.addData(serial.trim());
-    		qr.make();
-
-    		document.getElementById('qrCodeModalBody').innerHTML = qr.createImgTag(6);
-
-    		new bootstrap.Modal(document.getElementById('qrCodeModal')).show();
-	}
-
-	function showQRCodeModal(index) {
-
-    		const machine = machines[index];
-    		const qr = qrcode(0, 'L');
-    		qr.addData(`${machine.marque}|${machine.model}`);
-    		qr.make();
-
-    		document.getElementById('qrCodeModalBody').innerHTML = qr.createImgTag(6); 
-
-
-    		const qrModal = new bootstrap.Modal(document.getElementById('qrCodeModal'));
-    		qrModal.show();
-	}
 
 
 	function updateCVIList() {
-   		const tbody = document.getElementById('cvi-table-body');
-		tbody.innerHTML = '';
+    		const tbody = document.getElementById('cvi-table-body');
+    		tbody.innerHTML = '';
 
-		let found = false;
+    		let found = false;
+    		const today = new Date();
+    		today.setHours(0, 0, 0, 0);
 
-   		machines.forEach(machine => {
+    		machines.forEach(machine => {
         		(machine.unites || []).forEach(unit => {
             			if (unit.etatcvi === 'oui' && unit.numserie) {
                 			const tr = document.createElement('tr');
+                			const dateCVI = unit.dateFinCVI ? new Date(unit.dateFinCVI) : null;
+
+                			const isExpired = dateCVI && dateCVI < today;
+                			if (isExpired) {
+                    				tr.classList.add('table-danger'); 
+                			}
+
                 			tr.innerHTML = `
                     				<td>${machine.marque}</td>
                     				<td>${machine.model}</td>
                     				<td>${unit.numserie}</td>
                     				<td>${unit.position}</td>
-                    				<td>${unit.dateFinCVI}</td>
-                    				<td><button class="btn btn-sm btn-primary" onclick="showProductModal(${machines.indexOf(machine)})">Voir plus</button></td>
+                   				<td class="${isExpired ? 'text-danger fw-bold' : ''}">
+                        				${unit.dateFinCVI || ''}
+                        				${isExpired ? ' (Expiré)' : ''}
+                    				</td>
                 			`;
                 			tbody.appendChild(tr);
                 			found = true;
@@ -949,12 +989,11 @@ document.addEventListener('DOMContentLoaded', async function () {
     		});
 
     		if (!found) {
-        		tbody.innerHTML = '<tr><td colspan="6" class="text-center">Aucune machine avec CVI</td></tr>';
+       		 	tbody.innerHTML = '<tr><td colspan="6" class="text-center">Aucune machine avec CVI</td></tr>';
     		}
 	}
 
           	
-
         function showProductModal(index) {
             const machine = machines[index];
             currentScanIndex = index;
@@ -969,6 +1008,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 				<td>${unit.position||''}</td>
     				<td>${unit.etatcvi || 'non'}</td>
     				<td>${unit.dateFinCVI || ''}</td>
+				<td><button class="btn btn-primary" onclick="showUnitEditView(${index}, ${i})">Modifier</button></td>
+
+
   			</tr>
 		`;
 
@@ -984,6 +1026,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 						<th>Emplacement</th>
           					<th>CVI</th>
           					<th>Date fin CVI</th>
+						<th>Action</th>
+
         				</tr>
       				</thead>
       				<tbody>
@@ -1001,6 +1045,15 @@ document.addEventListener('DOMContentLoaded', async function () {
             		<label class="form-label">Modèle</label>
             		<input type="text" class="form-control" id="modal-model" value="${machine.model}">
         	</div>
+		
+		<div>
+			
+			<div class="mb-3">
+    				<label class="form-label">Description</label>
+    				<textarea class="form-control" id="modal-description" rows="4">${machine.description || ''}</textarea>
+    				<div class="form-text mt-1">Aperçu : <span id="description-preview"></span></div>
+			</div>
+		</div>
         	${tableWrapper}
 
         	<div class="d-flex justify-content-between mt-3">
@@ -1008,7 +1061,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             		<button class="btn btn-danger" onclick="deleteMachine(${index})">Supprimer</button>
         	</div>
     	   `;
-
+           document.getElementById('description-preview').innerHTML = rendreCliquable(machine.description || "");
 
             new bootstrap.Modal(document.getElementById('productModal')).show();
         }
@@ -1017,6 +1070,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             const index = currentScanIndex;
 	    const newmodel = document.getElementById('modal-model').value;
 	    const newmarque = document.getElementById('modal-marque').value;
+	    const newdescription = document.getElementById('modal-description').value;
 
 
     	    if (!newmarque || !newmodel) {
@@ -1026,7 +1080,11 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             machines[index].model = newmodel;
             machines[index].marque = newmarque;
-
+	    machines[index].description = newdescription;
+	    const numseries = machines[index].unites?.map(u => u.numserie).filter(Boolean);
+	    logAction("modification", `Mise à jour de ${machines[index].marque} ${machines[index].model}`, {
+    		numseries
+	    });
             saveMachines();
             updateInventory();
             updateCVIList();
@@ -1040,6 +1098,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 saveMachines();
                 updateInventory();
                 updateCVIList();
+		logAction("suppression", `Machine supprimée : ${machines[index].marque} ${machines[index].model}`);
                 showAlert('Machine supprimée', 'success');
                 bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
             }
@@ -1120,74 +1179,190 @@ document.addEventListener('DOMContentLoaded', async function () {
       		}
     	}
 
+	function rendreCliquable(texte) {
+    		const urlRegex = /(https?:\/\/[^\s]+)/g;
+    		return texte.replace(urlRegex, function(url) {
+        		return `<a href="${url}" target="_blank">${url}</a>`;
+    		});
+	}
+
 
 	function searchMachineByQR(data) {
     		const cleanedData = data.trim().toLowerCase();
     		if (cleanedData.includes('|')) {
-       			const [marque, model] = cleanedData.split('|').map(v => v.trim());
-        		const machine = machines.find(m =>
-           			m.marque.toLowerCase() === marque &&
-            			m.model.toLowerCase() === model
-
-        		);
-
+        		const [marque, model, numserie] = cleanedData.split('|').map(v => v.trim());
+        		for (let i = 0; i < machines.length; i++) {
+            			const machine = machines[i];
+            			for (let j = 0; j < (machine.unites || []).length; j++) {
+                			const unit = machine.unites[j];
+                			if (machine.marque.toLowerCase() === marque &&
+                    				machine.model.toLowerCase() === model &&
+                    				unit.numserie && unit.numserie.toLowerCase() === numserie) {
+                    				window.currentMachineIndex = i;
+                    				window.currentUnitIndex = j;
+		    				showUnitEditView(i, j);
+                    				showAlert('Machine trouvée', 'success');
+                    				return;
+                			}
+            			}
+        		}
+			showView('add-machine');
+        		document.getElementById('marque').value = marque;
+        		document.getElementById('model').value = model;
+        		document.getElementById('quantite').value = 1;
+        		document.getElementById('quantite').dispatchEvent(new Event('input'));
+        
+        		if (document.getElementById('numserie-0')) {
+            			document.getElementById('numserie-0').value = numserie;
+        		}
     		}
-    		for (let i = 0; i < machines.length; i++) {
-    			const machine = machines[i];
-    			for (let j = 0; j < (machine.unites || []).length; j++) {
-        			const unit = machine.unites[j];
-        			const scannedParts = cleanedData.split('|').map(p => p.trim().toLowerCase());
-
-        			if (
-            				machine.marque.toLowerCase() === scannedParts[0] &&
-            				machine.model.toLowerCase() === scannedParts[1] &&
-            				unit.numserie && unit.numserie.toLowerCase() === scannedParts[2]
-        			) {
-            				showUnitEditView(i, j);
-            				showAlert('Machine trouvée', 'success');
-            				return;
-        			}
-    			}
-		}
-
     		showAlert('Aucune machine ou unité trouvée avec ce QR Code', 'danger');
 	}
 
-	function manualSearch() {
-    		const query = document.getElementById('manual-search').value.trim().toLowerCase();
-    		const resultsContainer = document.getElementById('search-results');
-    		resultsContainer.innerHTML = '';
-
-   		if (!query) {
-        		showAlert('Veuillez entrer un terme de recherche.', 'warning');
-        		return;
-    		}
-
-    		const results = machines.map((m, i) => ({ machine: m, index: i })).filter(({ machine }) => machine.marque.toLowerCase().includes(query) ||
-				machine.model.toLowerCase().includes(query)
-				
-        		);
-
-    		if (results.length === 0) {
-        		showAlert('Aucun produit trouvé', 'danger');
-        		return;
-    		}
-
-    		let html = `<div class="list-group">`;
-    		results.forEach(({ machine, index }) => {
-        		html += `
-            			<div class="list-group-item d-flex justify-content-between align-items-center">
-                			<div>
-                    				<strong>${machine.marque}</strong> - ${machine.model} (${machine.quantite} unités)
-                    				<br><small>Position : ${machine.position}</small>
-                			</div>
-                			<button class="btn btn-sm btn-primary" onclick="showProductModal(${index})">Modifier</button>
-            			</div>
-       	 		`;
+	function logAction(type, message, data = null) {
+    		const logs = JSON.parse(localStorage.getItem('logs')) || [];
+    		logs.push({
+        		timestamp: new Date().toISOString(),
+        		type,
+        		message,
+        		data
     		});
-   		html += `</div>`;
-    		resultsContainer.innerHTML = html;
+    		localStorage.setItem('logs', JSON.stringify(logs));
 	}
+	function updateLogsView() {
+    		const logs = JSON.parse(localStorage.getItem('logs')) || [];
+    		const tbody = document.getElementById('logs-table-body');
+    		tbody.innerHTML = '';
+
+    		logs.reverse().forEach(log => {
+        		const tr = document.createElement('tr');
+        		tr.innerHTML = `
+            			<td>${new Date(log.timestamp).toLocaleString()}</td>
+           			<td><span class="badge bg-${log.type === 'erreur' ? 'danger' : 'info'}">${log.type}</span></td>
+            			<td>${log.message}</td>
+        		`;
+        		tbody.appendChild(tr);
+    		});
+	}
+	function clearLogs() {
+    		if (confirm("Effacer tous les logs ?")) {
+        		localStorage.removeItem('logs');
+        		updateLogsView();
+        		showAlert("Logs supprimés", "warning");
+    		}
+	}
+        function manualSearch() {
+            const query = document.getElementById('manual-search').value.trim().toLowerCase();
+	    const searchType =document.getElementById('search-type').value;
+            const resultsContainer = document.getElementById('search-results');
+            resultsContainer.innerHTML = '';
+
+            if (!query) {
+                showAlert('Veuillez entrer un terme de recherche.', 'warning');
+                return;
+            }
+	    let results = []
+	    if (searchType === 'model'){ results = machines.map((m, i) => ({ machine: m, index: i })).filter(({ machine }) => (machine.marque && machine.marque.toLowerCase().includes(query)) ||
+                    (machine.model && machine.model.toLowerCase().includes(query))
+                );
+	    } else if (searchType==='numserie') { results = machines.flatMap((machine, index) => { 
+		if (!Array.isArray(machine.unites)) return [];
+		return machine.unites.filter(unit =>unit.numserie && unit.numserie.toLowerCase().includes(query)).map(unit=> ({machine, index}));
+		});
+	   }
+				
+            if (results.length === 0) {
+                resultsContainer.innerHTML = '<div class="alert alert-warning">Aucun résultat trouvé</div>';
+                return;
+            }
+
+            let html = `<div class="list-group">`;
+            results.forEach(({ machine, index }) => {
+                html += `
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${machine.marque || ''}</strong> - ${machine.model || ''}
+                            <br><small>${machine.quantite || 0} unités disponible | Emplacement : ${machine.emplacement || ''}</small>
+                        </div>
+                        <button class="btn btn-sm btn-primary" onclick="showProductModal(${index})">Voir plus</button>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+            resultsContainer.innerHTML = html;
+        }
+
+	let currentSort={key:'',asc:true,th:null};
+
+	function sortMachinesby(key,thElement){
+		if (currentSort.key === key){
+			currentSort.asc=!currentSort.asc;
+		} else {
+			currentSort = {key,asc:true,th:thElement};
+		}
+		machines.sort((a,b)=> { 
+			let valA=a[key]; 
+			let valB=b[key];
+			if (typeof valA === 'string') valA=valA.toLowerCase();
+			if (typeof valB === 'string') valB=valB.toLowerCase();
+			if (valA < valB) return currentSort.asc ? -1 :1;
+			if (valA > valB) return currentSort.asc ? 1 :-1;
+			return 0;
+		});
+		document.querySelectorAll("th.chevron").forEach(span => span.textContent='');
+		const chevron = currentSort.asc ? ' ▲':' ▼';
+		thElement.querySelector(".chevron").textContent = chevron;
+		updateInventory();
+	}
+	function imprimerQRCodeUnite() {
+    		const machine = machines[currentMachineIndex];
+    		const unit = machine.unites[currentUnitIndex];
+    
+    		const marque = machine.marque || '';
+    		const model = machine.model || '';
+    		const numserie = unit.numserie || '';
+
+    		const qrData = `${marque}|${model}|${numserie}`;
+    		const qr = qrcode(0, 'H');
+    		qr.addData(qrData);
+    		qr.make();
+
+    		const qrImg = qr.createImgTag(5);
+
+    		const printWindow = window.open('', '_blank');
+    		printWindow.document.write(`
+        		<html>
+        			<head>
+            				<title>QR Code</title>
+            					<style>
+                					body {
+                    						display: flex;
+                    						flex-direction: column;
+                    						align-items: center;
+                    						justify-content: center;
+                    						font-family: Arial, sans-serif;
+                					}
+                					.infos {
+                    						margin-top: 10px;
+                    						text-align: center;
+                    						font-weight: bold;
+                					}
+            					</style>
+        			</head>
+        			<body>
+            				${qrImg}
+            				<div class="infos">
+                				<div>${marque}</div>
+                				<div>${model}</div>
+                				<div>${numserie}</div>
+            				</div>
+        			</body>
+        		</html>
+    		`);
+    		printWindow.document.close();
+    		setTimeout(() => printWindow.print(), 200);
+	}
+
 	async function printQRCode() {
     		const marque = document.getElementById('marque').value.trim();
     		const model = document.getElementById('model').value.trim();
@@ -1278,7 +1453,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     printWindow.document.close();
     setTimeout(() => {
         printWindow.print();
-    }, 0.1);
+    },100);
 }
 
         // Helpers
@@ -1305,39 +1480,46 @@ document.addEventListener('DOMContentLoaded', async function () {
                 alert.remove();
             }, 5000);
         }
-	async function chargerMachinesDepuisGitHub() {
-    try {
-        const res = await fetch("https://api.github.com/repos/Valentin-roma/inventaire-machines/contents/data/machines.json");
-        const data = await res.json();
-        const json = atob(data.content); 
-        machines = JSON.parse(json);
-        localStorage.setItem('machines', JSON.stringify(machines));
-        console.log("Données chargées depuis GitHub");
-    } catch (e) {
-        showAlert("Erreur lors du chargement GitHub", "danger");
-        machines = JSON.parse(localStorage.getItem('machines')) || [];
-    }
-}
-    </script>
-<script>
-async function envoyerVersGitHub(machines) {
-  const response = await fetch("https://machine-api-vercel.vercel.app/api/update", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ contentJSON: machines })
-  });
- 
-  const result = await response.json();
-  if (response.ok) {
-    console.log("mise à jour réussi sur github");
-  } else {
-    showAlert("Erreur : " + result.message);
-  }
-}
+		async function chargerMachinesDepuisGitHub() {
+    			try {
+        			const res = await fetch("https://api.github.com/repos/Valentin-roma/inventaire-machines/contents/data/machines.json");
+        			const data = await res.json();
+        			const json = atob(data.content); 
+        			machines = JSON.parse(json);
+        			localStorage.setItem('machines', JSON.stringify(machines));
+        			console.log("Données chargées depuis GitHub");
+    			} catch (e) {
+        			showAlert("Erreur lors du chargement GitHub", "danger");
+        			machines = JSON.parse(localStorage.getItem('machines')) || [];
+    			}
+			machines.forEach(machine=>{
+				if (Array.isArray(machine.unites)){
+					const uniquepositions=[...new Set(machine.unites.map(u => u.position?.trim()).filter(Boolean))];
+					machine.emplacement = uniquepositions.join("+");
+			
+				}
+			});
+		}
 
-</script>
+		async function envoyerVersGitHub(machines) {
+  			const response = await fetch("https://machine-api-vercel.vercel.app/api/update", {
+    			method: "POST",
+    			headers: {
+      				"Content-Type": "application/json"
+    			},
+    			body: JSON.stringify({ contentJSON: machines })
+  			});
+ 
+  			const result = await response.json();
+  			if (response.ok) {
+    				console.log("mise à jour réussi sur github");
+  			} else {
+    				showAlert("Erreur : " + result.message);
+  			}
+		}
+
+
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </body></html>
